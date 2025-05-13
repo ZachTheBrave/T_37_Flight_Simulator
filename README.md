@@ -21,27 +21,47 @@ The T-37 Flight Simulator is a multiplayer, interactive museum exhibit designed 
 ## 📁 Repository Structure
 
 T_37_Flight_Simulator/
+
 ├── Distribution/ # Final plugin binaries and resource files
+
 │ ├── 01_XplaneBatch.bat
+
 │ ├── Cessna T-37 Situation.sit
+
 │ ├── T37_plugin/ # Compiled plugin (win.xpl)
+
 │ └── T37_Resources/ # Textures, HUDs, 3D models, scoreboard
+
 │
 ├── Documentation/
+
 │ ├── Drawing/ # Full CAD drawings and schematics
+
 │ ├── Final Reports/
+
 │ ├── Maintence Documentation/
+
 │ ├── Requirements/
+
 │ ├── Test Plan and Report/
+
 │ ├── User Manual/
+
 │ └── Weekly Reports/
+
 │
 ├── Source Code/ # Custom C++ plugin source code
+
 │ ├── T37_plugin.cpp
+
 │ ├── DataRefs.cpp
+
 │ └── stb_image.h
+
 │
+
 ├── .gitattributes
+
 ├── README.md
 
 ---
