@@ -115,4 +115,4 @@ This repository is intended to provide future maintainers and collaborators with
 - Plugin development references
 - Distribution-ready exhibit software
 
-For questions, please reach out to [Zachariah Chorette](mailto:zachariah-chorette@utulsa.edu).
+For questions, please reach out to [Zachariah Chorette](mailto:zachariah.chorette@protonmail.com).
