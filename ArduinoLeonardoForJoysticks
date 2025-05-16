@@ -1,0 +1,125 @@
+/*
+  Arduino Leonardo BNO055 Joystick Controller  
+  --------------------------------------------
+About the joystick code:
+  -Code works with both joysticks plugged in, as well as only one.
+  -the arduino retains memory, so there is no need to reupload the code unto the arduino if it is unplugged or power turned off. 
+  -The sensor chips (BNO055s by aidafruit) auto callibrate so they wont need manual calibration. 
+  
+How to set up the code (software):
+  -Download and install the latest version Arduino IDE for windows. (Note: should already be done on computer):https://www.arduino.cc/en/software/
+  -Go to this Github page and download the .ZIP file of the code, save it for later acces: https://github.com/MHeironimus/ArduinoJoystickLibrary
+   its called ArduinoJoystickLibrary by MHeironimus.
+  -Open Arduino IDE
+  -Copy and paste code below to Arduino IDE
+  -Click "sketch" in top left corner, Click on "include library",click on "ADD .ZIP File", search and install/add ArduinoJoystickLibrary by MHeironimus .zip file.
+  -Click "sketch" in top left corner, Click on "include library",click on "manage libraries", search and install the folowing 3 libraries:
+  ----"Adafruit Unified Sensor" by Arduino 
+  ----"Adafruit BNO055" by Arduino
+  ----this one should not need installing but if there are error codes, "Wire.h" by arduino
+  -Plug in the arduino, make sure the BNOs are plugged into the arduino. See manual for connections.
+  -Click "tools" in top left corner, click on "board" and select "arduino leonardo".
+  -Click "tools" in top left corner, click on "port", click the port the leonardo is plugged into (It will pop up and mention "leonardo" in the name).
+  -save file by clicking "file", "save:.
+  -Lastly, click the arrow (Upload) in top left corner and joysticks are ready to go!
+
+ 
+ Troubleshooting tips:
+ -make sure BNO055 sensor is plugged in correctly with according to the manual, as well as the wires connected to the arduino.
+ -One way to check if the BNO055 is working properly is to run the run, and click on the Serial monitor (looks like a magnifying glass) in the top right corner, 
+  should display strings of various numbers, if shows 0s or errors, connections are wrong.
+ -if one or both joysticks randomly dont work try unplugging and plugging back in the arduino to the computer, and if the issue continues try re uploading the code.
+
+
+   Maps:
+  - Roll (Euler.y) → Joystick X axis (left/right tilt)
+  - Pitch (Euler.z) → Joystick Y axis (forward/back tilt)
+*/
+
+#include <Wire.h>
+#include <Adafruit_Sensor.h> //"Adafruit Unified Sensor"
+#include <Adafruit_BNO055.h> //"Adafruit BNO055"
+#include <Joystick.h>
+
+// BNO055 Sensors
+Adafruit_BNO055 bno1 = Adafruit_BNO055(55, 0x28);
+Adafruit_BNO055 bno2 = Adafruit_BNO055(56, 0x29);
+
+// Joystick: Only X and Y axes enabled
+Joystick_ Joystick(JOYSTICK_DEFAULT_REPORT_ID,
+                   JOYSTICK_TYPE_GAMEPAD,
+                   0, 0,               // Buttons, Hat
+                   true, true, false,  // X, Y
+                   false, false, false,
+                   false, false, false);
+
+bool bno1_ok = false;
+bool bno2_ok = false;
+
+void setup() {
+  Serial.begin(115200);
+  Wire.begin();
+
+  // Initialize BNO055 #1
+  if (bno1.begin()) {
+    Serial.println("BNO055 #1 connected");
+    bno1.setExtCrystalUse(true);
+    bno1_ok = true;
+  } else {
+    Serial.println("BNO055 #1 failed");
+  }
+
+  // Initialize BNO055 #2 (optional)
+  if (bno2.begin()) {
+    Serial.println("BNO055 #2 connected");
+    bno2.setExtCrystalUse(true);
+    bno2_ok = true;
+  } else {
+    Serial.println("BNO055 #2 failed");
+  }
+
+  Joystick.begin();
+}
+
+void loop() {
+  float roll = 0;
+  float pitch = 0;
+  int sensors = 0;
+
+  if (bno1_ok) {
+    imu::Vector<3> euler1 = bno1.getVector(Adafruit_BNO055::VECTOR_EULER);
+    roll += euler1.y();    // Roll (side tilt)
+    pitch += euler1.z();   // Pitch (forward/back tilt)
+    sensors++;
+  }
+
+  if (bno2_ok) {
+    imu::Vector<3> euler2 = bno2.getVector(Adafruit_BNO055::VECTOR_EULER);
+    roll += euler2.y();
+    pitch += euler2.z();
+    sensors++;
+  }
+
+  if (sensors > 0) {
+    roll /= sensors;
+    pitch /= sensors;
+
+    // Map Roll (-90° to 90°) → X axis (0 to 1023)
+    int xAxis = map((int)roll, -90, 90, 0, 1023);
+
+    // Map Pitch (-180° to 180°) → Y axis (0 to 1023)
+    int yAxis = map((int)pitch, -180, 180, 0, 1023);
+
+    Joystick.setXAxis(xAxis);
+    Joystick.setYAxis(yAxis);
+
+    Serial.print("Roll → X: "); Serial.print(xAxis);
+    Serial.print(" | Pitch → Y: "); Serial.println(yAxis);
+  } else {
+    Joystick.setXAxis(512);
+    Joystick.setYAxis(512);
+    Serial.println("No sensors detected!");
+  }
+
+  delay(20); // ~50 Hz refresh
+}
